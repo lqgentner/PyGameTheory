@@ -16,7 +16,7 @@ from typing import Literal
 from numpy.typing import ArrayLike
 
 __author__ = "Luis Gentner"
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __email__ = "luis.quentin.gentner@estudiantat.upc.edu"
 
 
@@ -42,7 +42,7 @@ class CoopGame:
         self.players = list(players)
         # self.n_players = len(self.players)
         self.coalitions = self._generate_coalitions(self.players)
-        self._coalitions_str = [str(", ".join(coal))
+        self._coalitions_str = [", ".join([str(member) for member in coal])
                                 for coal in self.coalitions]
         if len(val_func) != len(self.coalitions):
             raise ValueError(
@@ -266,7 +266,7 @@ class BuyingGroup(CoopGame):
         self.disc_dict = discounts
         self.base_price = base_price
         self.coalitions = self._generate_coalitions(self.players)
-        self._coalitions_str = [str(", ".join(coal))
+        self._coalitions_str = [", ".join([str(member) for member in coal])
                                 for coal in self.coalitions]
 
         self.coalitions = self._generate_coalitions(self.players)
