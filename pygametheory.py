@@ -13,10 +13,10 @@ from scipy.special import factorial
 import itertools
 from tabulate import tabulate, SEPARATING_LINE
 from typing import Literal
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 
 __author__ = "Luis Gentner"
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 __email__ = "luis.quentin.gentner@estudiantat.upc.edu"
 
 
@@ -88,7 +88,7 @@ class CoopGame:
 
         self._distribution_table("nbanz")
 
-    def _gamma(self, n: ArrayLike, s: ArrayLike) -> ArrayLike:
+    def _gamma(self, n: NDArray[np.int_], s: NDArray[np.int_]) -> NDArray[np.float_]:
         n = np.array(n)
         s = np.array(s)
         return factorial(n-s) * factorial(s-1) / factorial(n)
