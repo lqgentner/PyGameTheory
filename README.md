@@ -2,6 +2,8 @@
 
 ## Preconditions
 
+Only compatible with Python 3.10 or higher.
+
 Please make sure that the packages `numpy`, `scipy`, and `tabulate`
 are installed:
 

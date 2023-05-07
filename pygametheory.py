@@ -35,9 +35,10 @@ class CoopGame:
         and have 2^(n-1) entries, with n being the number of players.
     """
 
-    def __init__(self,
-                 players: str | list[str | int] | tuple[str | int],
-                 val_func: list) -> None:
+    def __init__(
+            self,
+            players: str | list[str | int] | tuple[str | int, ...],
+            val_func: list) -> None:
 
         self.players = list(players)
         # self.n_players = len(self.players)
@@ -60,7 +61,9 @@ class CoopGame:
                       "Cost": self._cost_func}, headers="keys")
 
     def _generate_coalitions(
-            self, players: str | list[str | int] | tuple[str | int]) -> list[float]:
+        self,
+        players: str | list[str | int] | tuple[str | int, ...]
+    ) -> list[float]:
         """Generate all player coalitions"""
         # "ABC" --> [('A',), ('B',), ('C',),
         #            ('A', 'B'), ('A', 'C'), ('B', 'C'),
@@ -88,7 +91,11 @@ class CoopGame:
 
         self._distribution_table("nbanz")
 
-    def _gamma(self, n: NDArray[np.int_], s: NDArray[np.int_]) -> NDArray[np.float_]:
+    def _gamma(
+            self,
+            n: NDArray[np.int_],
+            s: NDArray[np.int_]
+    ) -> NDArray[np.float_]:
         n = np.array(n)
         s = np.array(s)
         return factorial(n-s) * factorial(s-1) / factorial(n)
@@ -99,20 +106,21 @@ class CoopGame:
     ) -> None:
         """Displays the distributed cost per player for all coalitions"""
 
-        if method == "prop":
-            func = self._prop
-            dist_str = "Prop. cost π"
-        elif method == "shap":
-            func = self._shap
-            dist_str = "Shapley val. φ"
-        elif method == "banz":
-            func = self._banz
-            dist_str = "Banzhaf val. β"
-        elif method == "nbanz":
-            func = self._nbanz
-            dist_str = "Norm Banzhaf val. nβ"
-        else:
-            raise ValueError("Provided method not found")
+        match method:
+            case "prop":
+                func = self._prop
+                dist_str = "Prop. cost π"
+            case "shap":
+                func = self._shap
+                dist_str = "Shapley val. φ"
+            case "banz":
+                func = self._banz
+                dist_str = "Banzhaf val. β"
+            case "nbanz":
+                func = self._nbanz
+                dist_str = "Norm Banzhaf val. nβ"
+            case _:
+                raise ValueError("Provided method not found")
 
         # List to store table output
         table = []
@@ -151,8 +159,8 @@ class CoopGame:
 
     def _prop(self,
               player: str,
-              coal: tuple,
-              val_dict: dict[tuple, int]
+              coal: tuple[str, ...],
+              val_dict: dict[tuple[str, ...], int]
               ) -> float:
         "Calculates the proportional cost for a player in a coalition"
 
@@ -163,8 +171,8 @@ class CoopGame:
 
     def _shap(self,
               player: str,
-              coal: tuple,
-              val_dict: dict[tuple, int]
+              coal: tuple[str, ...],
+              val_dict: dict[tuple[str, ...], int]
               ) -> float:
         "Calculates the Shapley value for a player in a coalition"
 
@@ -185,8 +193,8 @@ class CoopGame:
 
     def _banz(self,
               player: str,
-              coal: tuple,
-              val_dict: dict[tuple, int]
+              coal: tuple[str, ...],
+              val_dict: dict[tuple[str, ...], int]
               ) -> float:
         "Calculates the Banzhaf value for a player in a coalition"
 
@@ -205,8 +213,8 @@ class CoopGame:
 
     def _nbanz(self,
                player: str,
-               coal: tuple,
-               val_dict: dict[tuple, int]
+               coal: tuple[str, ...],
+               val_dict: dict[tuple[str, ...], int]
                ) -> float:
         "Calculates the normed Banzhaf value for a player in a coalition"
 
@@ -253,12 +261,13 @@ class BuyingGroup(CoopGame):
         Base price per unit
     """
 
-    def __init__(self,
-                 players: str | list[str | int] | tuple[str | int],
-                 units: list[int],
-                 discounts: dict[int, float],
-                 base_price: float
-                 ) -> None:
+    def __init__(
+        self,
+        players: str | list[str | int] | tuple[str | int, ...],
+        units: list[int],
+        discounts: dict[int, float],
+        base_price: float
+    ) -> None:
         self.players = list(players)
         if len(units) != len(self.players):
             raise ValueError("Units must have same length as player size.")
@@ -343,20 +352,21 @@ class BuyingGroup(CoopGame):
     ) -> None:
         """Displays the distributed cost per player for all coalitions"""
 
-        if method == "prop":
-            func = self._prop
-            dist_str = "π"
-        elif method == "shap":
-            func = self._shap
-            dist_str = "φ"
-        elif method == "banz":
-            func = self._banz
-            dist_str = "β"
-        elif method == "nbanz":
-            func = self._nbanz
-            dist_str = "nβ"
-        else:
-            raise ValueError("Provided method not found")
+        match method:
+            case "prop":
+                func = self._prop
+                dist_str = "π"
+            case "shap":
+                func = self._shap
+                dist_str = "φ"
+            case "banz":
+                func = self._banz
+                dist_str = "β"
+            case "nbanz":
+                func = self._nbanz
+                dist_str = "nβ"
+            case _:
+                raise ValueError("Provided method not found")
 
         # List to store table output
         table = []
@@ -422,6 +432,7 @@ class BuyingGroup(CoopGame):
                         "H. cost λ_c": hrsny_cost,
                         "H. save λ_s": hrsny_save},
                        headers="keys", floatfmt=".2f"))
+
 
 class NormFormGame:
     """
