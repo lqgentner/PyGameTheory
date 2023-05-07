@@ -381,6 +381,99 @@ class BuyingGroup(CoopGame):
 
         print(tabulate(table, headers=header, floatfmt=".2f"))
 
+
+class NormFormGame:
+    """
+    A class for a normal-form game
+
+    Parameters
+    ----------
+
+    A: array-like
+        The 2D payoff matrix for player A (row player)
+    B: array-like
+        The 2D payoff matrix for player B (column player)
+    """
+
+    def __init__(self, A: ArrayLike, B: ArrayLike) -> None:
+        self.A = np.array(A)
+        self.B = np.array(B)
+        if A.shape != B.shape:
+            raise ValueError("Payoff matrices must have same shape")
+        self.nrows = self.A.shape[0]
+        self.ncols = self.A.shape[1]
+
+    def __str__(self) -> str:
+        return("A normal form game with payoff matrices:\n"
+            "Player A (Row player):\n"
+            f"{str(self.A)}\n"
+            "Player B (Column player):\n"
+            f"{str(self.B)}"
+        )
+    
+    def dominant_strategies(self) -> None:
+        """
+        Print the dominant strategies for both players,
+        if the exist.
+        """
+        # Find indices of strongest elements for row and col players
+        max_A = [self.A[:, col_idx].argmax() for col_idx in range(self.ncols)]
+        max_B = [self.B[row_idx, :].argmax() for row_idx in range(self.nrows)]
+
+        dom_A = dom_B = None
+        dom_A_vals = dom_B_vals = None
+
+        # Dominant strategy if indices are equal
+        if all(x == max_A[0] for x in max_A):
+            dom_A = max_A[0]
+            dom_A_vals = self.A[dom_A, :]
+        if all(x == max_B[0] for x in max_B):
+            dom_B = max_B[0]
+            dom_B_vals = self.B[:, dom_B]
+
+        # Print strategies
+        print("Found dominant strategies:")
+        dom_table = [["A (rows)", str(dom_A + 1), str(dom_A_vals)],
+                    ["B (cols)", str(dom_B + 1), str(dom_B_vals)]]
+        print(tabulate(dom_table, headers=["Player", "Index", "Values"]), "\n")
+
+    def nash_equilibria(self) -> None:
+        """
+        Print the Nash equilibria,
+        if the exist.
+        """
+        # Create list to store Nash equilibria
+        ne_list = list()
+
+        # Iterate over all matrix elements
+        for row_idx in range(self.nrows):
+            for col_idx in range(self.ncols):
+                # Slice current col for row player
+                A_col = self.A[:, col_idx]
+                # Slice current row for col player
+                B_row = self.B[row_idx, :]
+                # Proceed if element is biggest in col for row player
+                if not (A_col.argmax() == row_idx):
+                    continue
+                # Proceed if element is biggest in row for col player
+                if not (B_row.argmax() == col_idx):
+                    continue
+                # Save current element as NE
+                ne_list.append((row_idx, col_idx))
+
+        # Print NEs:
+        if len(ne_list) == 0:
+            print("No Nash equilibrias found.")
+        else:
+            print("Found Nash equilibria:")
+            ne_table = list()
+            ne_headers = ["No.", "Pos.", "Val. A", "Val. B"]
+            for i, ne in enumerate(ne_list):
+                ne_table.append([i + 1,
+                                tuple(idx + 1 for idx in ne),
+                                self.A[ne], self.B[ne]])
+            print(tabulate(ne_table, headers = ne_headers), "\n")
+
 # ------ EXAMPLE ------
 # Only execute when run as script
 if __name__ == "__main__":
