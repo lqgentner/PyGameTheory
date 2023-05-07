@@ -53,11 +53,13 @@ B, C            7660
 A, B, C         9660
 ```
 
+Let's find the Shapley values:
+
 ``` python
 coop_game.shapley()
 ```
 
-```console
+``` console
 Coa.     Player      Indv. cost c    Shapley val. φ
 -------  --------  --------------  ----------------
 A        A                2000.00           2000.00
@@ -74,6 +76,24 @@ B, C     B                4480.00           3830.00
 A, B, C  A                2000.00           1920.00
          B                4480.00           3750.00
          C                4480.00           3990.00
+```
+
+We can also print the Harsanyi coefficients:
+
+``` python
+coop_game.harsanyi()
+```
+
+``` console
+Coalition      Harsanyi λ
+-----------  ------------
+A                 2000.00
+B                 4480.00
+C                 4480.00
+A, B              -480.00
+A, C                 0.00
+B, C             -1300.00
+A, B, C            480.00
 ```
 
 ## Creating a buying group game

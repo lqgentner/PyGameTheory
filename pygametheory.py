@@ -16,7 +16,7 @@ from typing import Literal
 from numpy.typing import ArrayLike
 
 __author__ = "Luis Gentner"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __email__ = "luis.quentin.gentner@estudiantat.upc.edu"
 
 
@@ -47,17 +47,17 @@ class CoopGame:
         if len(val_func) != len(self.coalitions):
             raise ValueError(
                 "Value function size doesn't match coalition number")
-        self._val_func = val_func
+        self._cost_func = val_func
 
         # Create value function dict
-        self.val_dict = dict(zip(self.coalitions, self._val_func))
+        self.cost_dict = dict(zip(self.coalitions, self._cost_func))
         # Add empty set to dict
-        self.val_dict[()] = 0
+        self.cost_dict[()] = 0
 
     def __str__(self) -> str:
         return "A cooperative game with the following value function:\n" + \
             tabulate({"Coalition": self._coalitions_str,
-                      "Value": self._val_func}, headers="keys")
+                      "Cost": self._cost_func}, headers="keys")
 
     def _generate_coalitions(
             self, players: str | list[str | int] | tuple[str | int]) -> list[float]:
@@ -124,9 +124,9 @@ class CoopGame:
         for coal in self.coalitions:
             for i, player in enumerate(coal):
                 # Individual player cost
-                indv_cost = float(self.val_dict[(player,)])
+                indv_cost = float(self.cost_dict[(player,)])
                 # Calculate distributed cost for player in coalition
-                dist_cost = func(player, coal, self.val_dict)
+                dist_cost = func(player, coal, self.cost_dict)
 
                 # Remove multiple occurrences of coal for better readability
                 if i > 0:
@@ -214,6 +214,26 @@ class CoopGame:
         # have to be calculated - not very efficient, but clean implementation.
         banz_sum = sum(self._banz(member, coal, val_dict) for member in coal)
         return self._banz(player, coal, val_dict) * val_dict[coal] / banz_sum
+
+    def harsanyi(self) -> None:
+        """Calculates the Harsanyi coefficients."""
+        # Create matrix of size n_coal, n_coal
+        mat = np.zeros([len(self.coalitions)] * 2)
+        # Iterate over all coalitions
+        for coal in self.coalitions:
+            # Generate subsets of coalition
+            for subcoal in self._generate_coalitions(coal):
+                rowidx = self.coalitions.index(coal)
+                colidx = self.coalitions.index(subcoal)
+                mat[rowidx, colidx] = 1
+
+        # Solve the linear equation: val_func = mat * x
+        self._hrsny = np.linalg.solve(mat, self._cost_func)
+
+        # Print coefficients
+        print(tabulate({"Coalition": self._coalitions_str,
+                        "Harsanyi λ": self._hrsny},
+                       headers="keys", floatfmt=".2f"))
 
 
 class BuyingGroup(CoopGame):
@@ -404,13 +424,13 @@ class NormFormGame:
         self.ncols = self.A.shape[1]
 
     def __str__(self) -> str:
-        return("A normal form game with payoff matrices:\n"
-            "Player A (Row player):\n"
-            f"{str(self.A)}\n"
-            "Player B (Column player):\n"
-            f"{str(self.B)}"
-        )
-    
+        return ("A normal form game with payoff matrices:\n"
+                "Player A (Row player):\n"
+                f"{str(self.A)}\n"
+                "Player B (Column player):\n"
+                f"{str(self.B)}"
+                )
+
     def dominance(self) -> None:
         """
         Print the dominant strategies for both players,
@@ -434,7 +454,7 @@ class NormFormGame:
         # Print strategies
         print("Found dominant strategies:")
         dom_table = [["A (rows)", str(dom_A + 1), str(dom_A_vals)],
-                    ["B (cols)", str(dom_B + 1), str(dom_B_vals)]]
+                     ["B (cols)", str(dom_B + 1), str(dom_B_vals)]]
         print(tabulate(dom_table, headers=["Player", "Index", "Values"]), "\n")
 
     def nash(self) -> None:
@@ -472,7 +492,8 @@ class NormFormGame:
                 ne_table.append([i + 1,
                                 tuple(idx + 1 for idx in ne),
                                 self.A[ne], self.B[ne]])
-            print(tabulate(ne_table, headers = ne_headers), "\n")
+            print(tabulate(ne_table, headers=ne_headers), "\n")
+
 
 # ------ EXAMPLE ------
 # Only execute when run as script
