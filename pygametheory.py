@@ -411,7 +411,7 @@ class NormFormGame:
             f"{str(self.B)}"
         )
     
-    def dominant_strategies(self) -> None:
+    def dominance(self) -> None:
         """
         Print the dominant strategies for both players,
         if the exist.
@@ -437,7 +437,7 @@ class NormFormGame:
                     ["B (cols)", str(dom_B + 1), str(dom_B_vals)]]
         print(tabulate(dom_table, headers=["Player", "Index", "Values"]), "\n")
 
-    def nash_equilibria(self) -> None:
+    def nash(self) -> None:
         """
         Print the Nash equilibria,
         if the exist.
