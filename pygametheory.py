@@ -16,7 +16,7 @@ from typing import Literal
 from numpy.typing import ArrayLike, NDArray
 
 __author__ = "Luis Gentner"
-__version__ = "1.1.2"
+__version__ = "1.2.0"
 __email__ = "luis.quentin.gentner@estudiantat.upc.edu"
 
 
@@ -228,11 +228,11 @@ class CoopGame:
                 mat[rowidx, colidx] = 1
 
         # Solve the linear equation: val_func = mat * x
-        self._hrsny = np.linalg.solve(mat, self._cost_func)
+        hrsny_cost = np.linalg.solve(mat, self._cost_func)
 
         # Print coefficients
         print(tabulate({"Coalition": self._coalitions_str,
-                        "Harsanyi λ": self._hrsny},
+                        "Harsanyi λ": hrsny_cost},
                        headers="keys", floatfmt=".2f"))
 
 
@@ -401,6 +401,27 @@ class BuyingGroup(CoopGame):
 
         print(tabulate(table, headers=header, floatfmt=".2f"))
 
+    def harsanyi(self) -> None:
+        """Calculates the Harsanyi coefficients."""
+        # Create matrix of size n_coal, n_coal
+        mat = np.zeros([len(self.coalitions)] * 2)
+        # Iterate over all coalitions
+        for coal in self.coalitions:
+            # Generate subsets of coalition
+            for subcoal in self._generate_coalitions(coal):
+                rowidx = self.coalitions.index(coal)
+                colidx = self.coalitions.index(subcoal)
+                mat[rowidx, colidx] = 1
+
+        # Solve the linear equation: val_func = mat * x
+        hrsny_cost = np.linalg.solve(mat, self._cost_func)
+        hrsny_save = np.linalg.solve(mat, self._save_func)
+
+        # Print coefficients
+        print(tabulate({"Coalition": self._coalitions_str,
+                        "H. cost λ_c": hrsny_cost,
+                        "H. save λ_s": hrsny_save},
+                       headers="keys", floatfmt=".2f"))
 
 class NormFormGame:
     """
