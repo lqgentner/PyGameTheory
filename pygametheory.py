@@ -485,9 +485,12 @@ class NormFormGame:
 
         # Print strategies
         print("Found dominant strategies:")
-        dom_table = [["A (rows)", str(dom_A + 1), str(dom_A_vals)],
-                     ["B (cols)", str(dom_B + 1), str(dom_B_vals)]]
-        print(tabulate(dom_table, headers=["Player", "Index", "Values"]), "\n")
+        dom_table = [["A (rows)", str(dom_A + 1 if dom_A else None),
+                      str(dom_A_vals)],
+                     ["B (cols)", str(dom_B + 1 if dom_B else None),
+                      str(dom_B_vals)]]
+        print(tabulate(dom_table,
+                       headers=["Player", "Index", "Values"]), "\n")
 
     def nash(self) -> None:
         """
