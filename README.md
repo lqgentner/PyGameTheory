@@ -232,3 +232,33 @@ Found Nash equilibria:
 -----  ------  --------  --------
     1  (2, 2)        -2        -2 
 ```
+
+## Creating a weighted majority voting game
+
+We take the parlament of Catalonia of 2021 as an weighted majority voting game:
+
+``` python
+abs_maj = 68
+parties = [33, 33, 32, 11, 9, 8, 6, 3]
+
+cat_2021 = pgt.WgtMajGame(abs_maj, parties)
+print(cat_2021)
+```
+
+``` console
+[68; 33, 33, 32, 11, 9, 8, 6, 3]
+```
+
+Let's look at the properties of the game:
+
+``` python
+cat_2021.properties()
+```
+
+``` console
+Property    Value
+----------  -------
+proper      True
+strong      True
+decisive    True
+```

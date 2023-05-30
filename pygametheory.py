@@ -530,6 +530,63 @@ class NormFormGame:
             print(tabulate(ne_table, headers=ne_headers), "\n")
 
 
+class WgtMajGame():
+    """
+    A class for a weighted majority voting game
+
+    Parameters
+    ----------
+
+    quota : int
+        The limit which must be reached or exceeded to win the game
+    weights : list of int
+        The individual player weights
+    """
+
+    def __init__(self, quota: int = None, weights: list = None) -> None:
+
+        if quota is None or weights is None:
+            quota, weights = self.__user_input()
+
+        self.quota = int(quota)
+        self.weights = np.array(weights)
+        self.sum_weights = self.weights.sum()
+
+        if self.sum_weights < self.quota:
+            raise ValueError("Not a valid weighted mayority voting game.")
+
+    def __str__(self) -> str:
+        return f"[{self.quota}; {', '.join(map(str, self.weights))}]"
+
+    def __repr__(self) -> str:
+        return f"WgtMajGame({self.quota}, {list(self.weights)})"
+
+    def __user_input(self) -> tuple[int, list[int]]:
+        """Asks the user to enter the properties of the game"""
+        quota = input("Enter quota: ")
+        weights = input("Enter player weights separated by a space: ")
+        weights = list(map(int, weights.split()))
+        return quota, weights
+
+    def properties(self) -> None:
+        """Prints the properness, strongness, and decisiveness of the game"""
+        props = {"proper": False,
+                 "strong": False,
+                 "decisive": False}
+        result = self.sum_weights - (2 * self.quota - 1)
+        if result > 0:
+            props["strong"] = True
+        elif result < 0:
+            props["proper"] = True
+        elif result == 0:
+            props["strong"] = True
+            props["proper"] = True
+            props["decisive"] = True
+
+        print(tabulate({"Property": props.keys(), "Value": props.values()},
+                       headers="keys"))
+
+
 # ------ EXAMPLE ------
 # Only execute when run as script
 if __name__ == "__main__":
