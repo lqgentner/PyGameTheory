@@ -60,9 +60,9 @@ class CoopGame:
                       "Cost": self._cost_func}, headers="keys")
 
     def _generate_coalitions(
-        self,
-        players: str | list[str | int] | tuple[str | int, ...]
-    ) -> list[float]:
+            self,
+            players: str | list[str | int] | tuple[str | int, ...]
+        ) -> list[float]:
         """Generate all player coalitions"""
         # "ABC" --> [('A',), ('B',), ('C',),
         #            ('A', 'B'), ('A', 'C'), ('B', 'C'),
@@ -70,25 +70,33 @@ class CoopGame:
         return [*itertools.chain.from_iterable(
             itertools.combinations(list(players), r+1) for r in range(len(players)))]
 
-    def proportional(self) -> None:
+    def proportional(
+            self,
+            show_coals: Literal["all", "last"] = "last") -> None:
         """Displays the proportional cost per player for all coalitions"""
 
-        self._distribution_table("prop")
+        self._distribution_table("prop", show_coals=show_coals)
 
-    def shapley(self) -> None:
+    def shapley(
+            self,
+            show_coals: Literal["all", "last"] = "last") -> None:
         """Displays the shapley value per player for all coalitions"""
 
-        self._distribution_table("shap")
+        self._distribution_table("shap", show_coals=show_coals)
 
-    def banzhaf(self) -> None:
+    def banzhaf(
+            self,
+            show_coals: Literal["all", "last"] = "last") -> None:
         """Displays the Banzhof value per player for all coalitions"""
 
-        self._distribution_table("banz")
+        self._distribution_table("banz", show_coals=show_coals)
 
-    def banzhaf_norm(self) -> None:
+    def banzhaf_norm(
+            self,
+            show_coals: Literal["all", "last"] = "last") -> None:
         """Displays the normalized Banzhof value per player for all coalitions"""
 
-        self._distribution_table("nbanz")
+        self._distribution_table("nbanz", show_coals=show_coals)
 
     def _gamma(
             self,
@@ -101,7 +109,8 @@ class CoopGame:
 
     def _distribution_table(
         self,
-        method: Literal["prop", "shap", "banz", "nbanz"]
+        method: Literal["prop", "shap", "banz", "nbanz"],
+        show_coals: Literal["all", "last"]
     ) -> None:
         """Displays the distributed cost per player for all coalitions"""
 
@@ -125,10 +134,18 @@ class CoopGame:
         table = []
         header = ["Coa.", "Player", "Indv. cost c", dist_str]
 
+        match show_coals:
+            case "all":
+                # Show all coalitions
+                coalitions = self.coalitions
+            case "last":
+                # Show coaliton with full cooperation only
+                coalitions = [self.coalitions[-1]]
+        
         # Only used for table formatting (dividers)
-        last_coal_size = 1
+        last_coal_size = len(coalitions[0])
 
-        for coal in self.coalitions:
+        for coal in coalitions:
             for i, player in enumerate(coal):
                 # Individual player cost
                 indv_cost = float(self.cost_dict[(player,)])
@@ -346,7 +363,8 @@ class BuyingGroup(CoopGame):
 
     def _distribution_table(
         self,
-        method: Literal["prop", "shap", "banz", "nbanz"]
+        method: Literal["prop", "shap", "banz", "nbanz"],
+        show_coals: Literal["all", "last"]
     ) -> None:
         """Displays the distributed cost per player for all coalitions"""
 
@@ -365,6 +383,17 @@ class BuyingGroup(CoopGame):
                 dist_str = "nβ"
             case _:
                 raise ValueError("Provided method not found")
+            
+        match show_coals:
+            case "all":
+                # Show all coalitions
+                coalitions = self.coalitions
+            case "last":
+                # Show coaliton with full cooperation only
+                coalitions = [self.coalitions[-1]]
+
+        # Only used for table formatting (dividers)
+        last_coal_size = len(coalitions[0])
 
         # List to store table output
         table = []
@@ -375,10 +404,7 @@ class BuyingGroup(CoopGame):
                   f"Save {dist_str}_s",
                   f"{dist_str}_c + {dist_str}_s"]
 
-        # Only used for table formatting (dividers)
-        last_coal_size = 1
-
-        for coal in self.coalitions:
+        for coal in coalitions:
             for i, player in enumerate(coal):
                 # Individual player cost
                 indv_cost = float(self.cost_dict[(player,)])
