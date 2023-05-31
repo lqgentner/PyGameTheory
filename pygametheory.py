@@ -50,10 +50,9 @@ class CoopGame:
                 "Value function size doesn't match coalition number")
         self._cost_func = val_func
 
-        # Create value function dict
-        self.cost_dict = dict(zip(self.coalitions, self._cost_func))
-        # Add empty set to dict
-        self.cost_dict[()] = 0
+        # Create value function dict that also contains the empty set
+        self.cost_dict = {(): 0}
+        self.cost_dict.update(dict(zip(self.coalitions, self._cost_func)))
 
     def __str__(self) -> str:
         return "A cooperative game with the following value function:\n" + \
@@ -325,12 +324,11 @@ class BuyingGroup(CoopGame):
         # Value functions
         self._cost_func = cost_func
         self._save_func = save_func
-        # Value function dicts
-        self.cost_dict = dict(zip(self.coalitions, self._cost_func))
-        self.save_dict = dict(zip(self.coalitions, self._save_func))
-        # Add empty set to dicts
-        self.cost_dict[()] = 0
-        self.save_dict[()] = 0
+        # Value function dicts that also contain the empty set
+        self.cost_dict = {(): 0}
+        self.save_dict = {(): 0}
+        self.cost_dict.update(dict(zip(self.coalitions, self._cost_func)))
+        self.save_dict.update(dict(zip(self.coalitions, self._save_func)))
 
     def coalition_cost(self) -> None:
         """Displays the common cost for all coalitions"""
@@ -530,7 +528,7 @@ class NormFormGame:
             print(tabulate(ne_table, headers=ne_headers), "\n")
 
 
-class WgtMajGame():
+class WgtMajGame(CoopGame):
     """
     A class for a weighted majority voting game
 
@@ -543,10 +541,7 @@ class WgtMajGame():
         The individual player weights
     """
 
-    def __init__(self, quota: int = None, weights: list = None) -> None:
-
-        if quota is None or weights is None:
-            quota, weights = self.__user_input()
+    def __init__(self, quota: int, weights: list[int]) -> None:
 
         self.quota = int(quota)
         self.weights = np.array(weights)
@@ -555,18 +550,23 @@ class WgtMajGame():
         if self.sum_weights < self.quota:
             raise ValueError("Not a valid weighted mayority voting game.")
 
+        self.players = [*range(1, len(weights) + 1)]
+        self.coalitions = self._generate_coalitions(self.players)
+        self._coalitions_str = [", ".join([str(member) for member in coal])
+                                for coal in self.coalitions]
+        self.coal_weights = [sum([self.weights[player - 1]
+                                  for player in coal]) for coal in self.coalitions]
+        self._cost_func = [1 if coal_weight >= self.quota else 0
+                           for coal_weight in self.coal_weights]
+
+        self.cost_dict = {(): 0}
+        self.cost_dict.update(dict(zip(self.coalitions, self._cost_func)))
+
     def __str__(self) -> str:
         return f"[{self.quota}; {', '.join(map(str, self.weights))}]"
 
     def __repr__(self) -> str:
         return f"WgtMajGame({self.quota}, {list(self.weights)})"
-
-    def __user_input(self) -> tuple[int, list[int]]:
-        """Asks the user to enter the properties of the game"""
-        quota = input("Enter quota: ")
-        weights = input("Enter player weights separated by a space: ")
-        weights = list(map(int, weights.split()))
-        return quota, weights
 
     def properties(self) -> None:
         """Prints the properness, strongness, and decisiveness of the game"""
