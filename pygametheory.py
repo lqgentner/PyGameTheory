@@ -139,7 +139,7 @@ class CoopGame:
                 if i > 0:
                     coal_str = None
                 else:
-                    coal_str = str(", ".join(coal))
+                    coal_str = ", ".join([str(member) for member in coal])
 
                 row = [coal_str,
                        player,
