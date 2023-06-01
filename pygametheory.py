@@ -571,22 +571,19 @@ class WgtMajGame(CoopGame):
 
         self.quota = int(quota)
         self.weights = np.array(weights)
-        self.sum_weights = self.weights.sum()
+        self._sum_weights = self.weights.sum()
 
-        if self.sum_weights < self.quota:
+        if self._sum_weights < self.quota:
             raise ValueError("Not a valid weighted mayority voting game.")
 
-        self.players = [*range(1, len(weights) + 1)]
-        self.coalitions = self._generate_coalitions(self.players)
-        self._coalitions_str = [", ".join([str(member) for member in coal])
-                                for coal in self.coalitions]
-        self.coal_weights = [sum([self.weights[player - 1]
-                                  for player in coal]) for coal in self.coalitions]
-        self._cost_func = [1 if coal_weight >= self.quota else 0
-                           for coal_weight in self.coal_weights]
+        players = [*range(1, len(weights) + 1)]
+        coalitions = self._generate_coalitions(players)
+        coal_weights = [sum([self.weights[player - 1]
+                                  for player in coal]) for coal in coalitions]
+        val_func = [1 if coal_weight >= self.quota else 0
+                           for coal_weight in coal_weights]
+        super().__init__(players, val_func)
 
-        self.cost_dict = {(): 0}
-        self.cost_dict.update(dict(zip(self.coalitions, self._cost_func)))
 
     def __str__(self) -> str:
         return f"[{self.quota}; {', '.join(map(str, self.weights))}]"
@@ -599,7 +596,7 @@ class WgtMajGame(CoopGame):
         props = {"proper": False,
                  "strong": False,
                  "decisive": False}
-        result = self.sum_weights - (2 * self.quota - 1)
+        result = self._sum_weights - (2 * self.quota - 1)
         if result > 0:
             props["strong"] = True
         elif result < 0:
